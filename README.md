@@ -1,6 +1,6 @@
-# uslog
+# uslogs
 
-`uslog` is a high-performance, unstructured logging library for Go, built on top of the standard library's `log/slog`. 
+`uslogs` is a high-performance, unstructured logging library for Go, built on top of the standard library's `log/slog`. 
 It is designed to be a drop-in replacement for `slog.TextHandler` with more place for customization, keeping performance in mind.
 
 ## Features
@@ -14,11 +14,11 @@ It is designed to be a drop-in replacement for `slog.TextHandler` with more plac
 ## Installation
 
 ```bash
-go get github.com/Drathveloper/uslog
+go get github.com/Drathveloper/uslogs
 ```
 
 ## Usage
-Using `uslog` is similar to using the standard `slog` package.
+Using `uslogs` is similar to using the standard `slog` package.
 ### Basic Example
 
 ``` go
@@ -28,12 +28,12 @@ import (
     "log/slog"
     "os"
     
-    "github.com/usuario/uslog"
+    "github.com/usuario/uslogs"
 )
 
 func main() {
     // Create a new handler
-    handler := uslog.NewUnstructuredHandler(uslog.WithWriter(os.Stdout))
+    handler := uslogs.NewUnstructuredHandler(uslog.WithWriter(os.Stdout))
 
     // Create a logger with the handler
     logger := slog.New(handler)
@@ -42,12 +42,12 @@ func main() {
     slog.SetDefault(logger)
 
     // Log something
-    logger.Info("Hello from uslog!", "status", "ok", "count", 42)
+    logger.Info("Hello from uslogs!", "status", "ok", "count", 42)
 }
 ```
 
 ### Configuration Options
-You can customize the handler using built-in uslog.LogWriterOption that includes:
+You can customize the handler using built-in uslogs.LogWriterOption that includes:
 *   `WithWriter`: Sets the writer to be used for output. Defaults to `os.Stdout`.
 *   `WithTimestamp`: Sets if timestamps should be included in the output. Defaults to `false`.
 *   `WithLevel`: Sets the minimum log level to be logged. Defaults to `slog.InfoLevel`.
@@ -56,7 +56,7 @@ You can customize the handler using built-in uslog.LogWriterOption that includes
 *   `WithResponsivePool`: Allows the usage of multiple buffer pools to reduce memory allocations. Defaults to `false`.
 
 ## Benchmarks
-uslog is designed to be as fast as the standard library's text handler but more configurable and with support for asynchrony.
+uslogs is designed to be as fast as the standard library's text handler but more configurable and with support for asynchrony.
 (You can run the included benchmark tests to verify performance on your machine)
 
 ``` bash
