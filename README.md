@@ -28,7 +28,7 @@ import (
     "log/slog"
     "os"
     
-    "github.com/usuario/uslogs"
+    "github.com/Drathveloper/uslogs"
 )
 
 func main() {
