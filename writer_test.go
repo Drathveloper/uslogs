@@ -1,4 +1,4 @@
-package uslog_test
+package uslogs_test
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ import (
 
 func TestAsyncWriter_BasicWrite(t *testing.T) {
 	var buf bytes.Buffer
-	w := uslog.NewAsyncWriter(&buf, 10)
+	w := uslogs.NewAsyncWriter(&buf, 10)
 
 	msg := []byte("hello\n")
 
@@ -40,7 +40,7 @@ func TestAsyncWriter_BasicWrite(t *testing.T) {
 
 func TestAsyncWriter_ConcurrentWrites(t *testing.T) {
 	var buf bytes.Buffer
-	w := uslog.NewAsyncWriter(&buf, 1000)
+	w := uslogs.NewAsyncWriter(&buf, 1000)
 
 	var wg sync.WaitGroup
 	total := 1000
@@ -70,7 +70,7 @@ func TestAsyncWriter_ConcurrentWrites(t *testing.T) {
 
 func TestAsyncWriter_CopiesInput(t *testing.T) {
 	var buf bytes.Buffer
-	w := uslog.NewAsyncWriter(&buf, 10)
+	w := uslogs.NewAsyncWriter(&buf, 10)
 
 	data := []byte("first\n")
 	_, _ = w.Write(data)
@@ -94,7 +94,7 @@ func TestAsyncWriter_CopiesInput(t *testing.T) {
 
 func TestAsyncWriter_WriteAfterClose(t *testing.T) {
 	var buf bytes.Buffer
-	w := uslog.NewAsyncWriter(&buf, 2)
+	w := uslogs.NewAsyncWriter(&buf, 2)
 
 	_ = w.Close()
 
@@ -124,7 +124,7 @@ func (s *slowWriter) String() string {
 
 func TestAsyncWriter_CloseWaitsForDrain(t *testing.T) {
 	sw := &slowWriter{}
-	w := uslog.NewAsyncWriter(sw, 1)
+	w := uslogs.NewAsyncWriter(sw, 1)
 
 	total := 200
 
@@ -141,7 +141,7 @@ func TestAsyncWriter_CloseWaitsForDrain(t *testing.T) {
 
 func TestAsyncWriter_HTTPServerShutdown(t *testing.T) {
 	var buf bytes.Buffer
-	w := uslog.NewAsyncWriter(&buf, 1000)
+	w := uslogs.NewAsyncWriter(&buf, 1000)
 
 	handler := func(wr http.ResponseWriter, r *http.Request) {
 		for i := 0; i < 10; i++ {
@@ -194,7 +194,7 @@ func TestAsyncWriter_HTTPServerShutdown(t *testing.T) {
 
 func TestAsyncWriter_WithCanceledContext(t *testing.T) {
 	var buf bytes.Buffer
-	w := uslog.NewAsyncWriter(&buf, 100)
+	w := uslogs.NewAsyncWriter(&buf, 100)
 
 	ctx, cancel := context.WithCancel(context.Background())
 

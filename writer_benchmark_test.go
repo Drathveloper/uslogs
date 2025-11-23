@@ -1,4 +1,4 @@
-package uslog_test
+package uslogs_test
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 )
 
 func BenchmarkAsyncWriter(b *testing.B) {
-	w := uslog.NewAsyncWriter(io.Discard, 100)
+	w := uslogs.NewAsyncWriter(io.Discard, 100)
 
 	data := []byte("log line example\n")
 

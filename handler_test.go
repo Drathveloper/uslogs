@@ -1,4 +1,4 @@
-package uslog_test
+package uslogs_test
 
 import (
 	"bytes"
@@ -13,9 +13,9 @@ import (
 )
 
 func TestEnabled(t *testing.T) {
-	handler := uslog.NewUnstructuredHandler(
-		uslog.WithWriter(io.Discard),
-		uslog.WithLevel(slog.LevelInfo))
+	handler := uslogs.NewUnstructuredHandler(
+		uslogs.WithWriter(io.Discard),
+		uslogs.WithLevel(slog.LevelInfo))
 
 	tests := []struct {
 		level    slog.Level
@@ -36,7 +36,7 @@ func TestEnabled(t *testing.T) {
 
 func TestHandleWritesMessage(t *testing.T) {
 	buf := &bytes.Buffer{}
-	handler := uslog.NewUnstructuredHandler(uslog.WithWriter(buf))
+	handler := uslogs.NewUnstructuredHandler(uslogs.WithWriter(buf))
 
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "test message", 1)
 	if err := handler.Handle(context.Background(), record); err != nil {
@@ -51,7 +51,7 @@ func TestHandleWritesMessage(t *testing.T) {
 
 func TestHandleWithAttrsAndAllValueKinds(t *testing.T) {
 	buf := &bytes.Buffer{}
-	handler := uslog.NewUnstructuredHandler(uslog.WithWriter(buf))
+	handler := uslogs.NewUnstructuredHandler(uslogs.WithWriter(buf))
 
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "msg", 1)
 	record.AddAttrs(
@@ -76,7 +76,7 @@ func TestHandleWithAttrsAndAllValueKinds(t *testing.T) {
 
 func TestWithAttrsAndWithGroup(t *testing.T) {
 	buf := &bytes.Buffer{}
-	handler := uslog.NewUnstructuredHandler(uslog.WithWriter(buf))
+	handler := uslogs.NewUnstructuredHandler(uslogs.WithWriter(buf))
 	h1 := handler.WithAttrs([]slog.Attr{slog.String("a", "val")})
 	h2 := h1.WithGroup("grp")
 
@@ -99,9 +99,9 @@ func TestWithAttrsAndWithGroup(t *testing.T) {
 func TestMaskedFields(t *testing.T) {
 	buf := &bytes.Buffer{}
 
-	handler := uslog.NewUnstructuredHandler(
-		uslog.WithWriter(buf),
-		uslog.WithMaskedFields("secret", "dontshow"))
+	handler := uslogs.NewUnstructuredHandler(
+		uslogs.WithWriter(buf),
+		uslogs.WithMaskedFields("secret", "dontshow"))
 
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "msg", 1)
 	record.AddAttrs(slog.String("secret", "dontshow"))
@@ -118,7 +118,7 @@ func TestMaskedFields(t *testing.T) {
 
 func TestWithTime(t *testing.T) {
 	buf := &bytes.Buffer{}
-	handler := uslog.NewUnstructuredHandler(uslog.WithWriter(buf), uslog.WithTimestamp())
+	handler := uslogs.NewUnstructuredHandler(uslogs.WithWriter(buf), uslogs.WithTimestamp())
 
 	tm := time.Now()
 	record := slog.NewRecord(tm, slog.LevelInfo, "msg", 1)
@@ -136,7 +136,7 @@ func TestWithTime(t *testing.T) {
 
 func TestIsResponsivePool(t *testing.T) {
 	buf := &bytes.Buffer{}
-	handler := uslog.NewUnstructuredHandler(uslog.WithWriter(buf), uslog.WithResponsivePool())
+	handler := uslogs.NewUnstructuredHandler(uslogs.WithWriter(buf), uslogs.WithResponsivePool())
 
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "msg", 1)
 	record.AddAttrs(slog.String("a", "val"))

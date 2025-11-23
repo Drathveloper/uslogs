@@ -1,4 +1,4 @@
-package uslog_test
+package uslogs_test
 
 import (
 	"io"
@@ -19,7 +19,7 @@ func (s *SimulatedDiskWriter) Write(p []byte) (n int, err error) {
 }
 
 func BenchmarkSlogAsyncWriter_Simple(b *testing.B) {
-	w := uslog.NewAsyncWriter(io.Discard, 10000)
+	w := uslogs.NewAsyncWriter(io.Discard, 10000)
 	defer w.Close()
 
 	logger := slog.New(slog.NewTextHandler(w, nil))
@@ -35,7 +35,7 @@ func BenchmarkSlogAsyncWriter_Simple(b *testing.B) {
 }
 
 func BenchmarkSlogAsyncWriter_WithAttrs(b *testing.B) {
-	w := uslog.NewAsyncWriter(io.Discard, 10000)
+	w := uslogs.NewAsyncWriter(io.Discard, 10000)
 	defer w.Close()
 
 	logger := slog.New(slog.NewTextHandler(w, nil))
@@ -53,13 +53,13 @@ func BenchmarkSlogAsyncWriter_WithAttrs(b *testing.B) {
 }
 
 func BenchmarkSlogAsyncWriter_Parallel(b *testing.B) {
-	w := uslog.NewAsyncWriter(io.Discard, 1000)
-	h := uslog.NewUnstructuredHandler(
-		uslog.WithWriter(w),
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithTimestamp(),
-		uslog.WithSeparator('|'),
-		uslog.WithResponsivePool())
+	w := uslogs.NewAsyncWriter(io.Discard, 1000)
+	h := uslogs.NewUnstructuredHandler(
+		uslogs.WithWriter(w),
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithTimestamp(),
+		uslogs.WithSeparator('|'),
+		uslogs.WithResponsivePool())
 	defer w.Close()
 
 	logger := slog.New(h)
@@ -96,13 +96,13 @@ func BenchmarkSlogRegularWriter_Parallel(b *testing.B) {
 func BenchmarkSlogAsyncWriter_ParallelSimulatedDisk(b *testing.B) {
 	disk := &SimulatedDiskWriter{Latency: 50 * time.Microsecond}
 
-	w := uslog.NewAsyncWriter(disk, 10000)
-	h := uslog.NewUnstructuredHandler(
-		uslog.WithWriter(w),
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithTimestamp(),
-		uslog.WithSeparator('|'),
-		uslog.WithResponsivePool())
+	w := uslogs.NewAsyncWriter(disk, 10000)
+	h := uslogs.NewUnstructuredHandler(
+		uslogs.WithWriter(w),
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithTimestamp(),
+		uslogs.WithSeparator('|'),
+		uslogs.WithResponsivePool())
 	defer w.Close()
 
 	logger := slog.New(h)

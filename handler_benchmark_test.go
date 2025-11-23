@@ -1,4 +1,4 @@
-package uslog_test
+package uslogs_test
 
 import (
 	"io"
@@ -13,10 +13,10 @@ import (
 var output = io.Discard
 
 func BenchmarkLogWriter_Handle(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'))
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'))
 	msg := strings.Repeat("X", 63*1024)
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, msg, 0)
 	b.ResetTimer()
@@ -30,11 +30,11 @@ func BenchmarkLogWriter_Handle(b *testing.B) {
 }
 
 func BenchmarkLogWriter_HandleWithTime(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithTimestamp())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithTimestamp())
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "It was a simple tip of the hat. Grace didn't think that anyone else besides her had even noticed it", 0)
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -47,11 +47,11 @@ func BenchmarkLogWriter_HandleWithTime(b *testing.B) {
 }
 
 func BenchmarkLogWriter_HandleWithTimeAndAttrs(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithTimestamp())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithTimestamp())
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "It was a simple tip of the hat. Grace didn't think that anyone else besides her had even noticed it", 0)
 	record.Add(slog.String("foo", "bar"), slog.Int("baz", 25))
 
@@ -66,10 +66,10 @@ func BenchmarkLogWriter_HandleWithTimeAndAttrs(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_Handle(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'))
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'))
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 63*1024)
 	b.ResetTimer()
@@ -83,11 +83,11 @@ func BenchmarkSlogWriter_Handle(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_HandleWithTime(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithTimestamp())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithTimestamp())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 63*1024)
 	b.ResetTimer()
@@ -101,11 +101,11 @@ func BenchmarkSlogWriter_HandleWithTime(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_HandleWithTimeAndAttrs(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithTimestamp())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithTimestamp())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 50*1024)
 	attr1 := slog.String("foo", "bar")
@@ -123,12 +123,12 @@ func BenchmarkSlogWriter_HandleWithTimeAndAttrs(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_HandleWithAll_64(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithMaskedFields("foo"),
-		uslog.WithTimestamp())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithMaskedFields("foo"),
+		uslogs.WithTimestamp())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 64*1024-36)
 	attr1 := slog.String("foo", "bar")
@@ -146,12 +146,12 @@ func BenchmarkSlogWriter_HandleWithAll_64(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_HandleWithAll_32(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithMaskedFields("foo"),
-		uslog.WithTimestamp())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithMaskedFields("foo"),
+		uslogs.WithTimestamp())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 32*1024-36)
 	attr1 := slog.String("foo", "bar")
@@ -169,13 +169,13 @@ func BenchmarkSlogWriter_HandleWithAll_32(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_HandleWithAll_64Responsive(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithMaskedFields("foo"),
-		uslog.WithTimestamp(),
-		uslog.WithResponsivePool())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithMaskedFields("foo"),
+		uslogs.WithTimestamp(),
+		uslogs.WithResponsivePool())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 64*1024-36)
 	attr1 := slog.String("foo", "bar")
@@ -193,13 +193,13 @@ func BenchmarkSlogWriter_HandleWithAll_64Responsive(b *testing.B) {
 }
 
 func BenchmarkSlogWriter_HandleWithAll_32Responsive(b *testing.B) {
-	writer := uslog.NewUnstructuredHandler(
-		uslog.WithLevel(slog.LevelInfo),
-		uslog.WithWriter(output),
-		uslog.WithSeparator('|'),
-		uslog.WithMaskedFields("foo"),
-		uslog.WithTimestamp(),
-		uslog.WithResponsivePool())
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithMaskedFields("foo"),
+		uslogs.WithTimestamp(),
+		uslogs.WithResponsivePool())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 32*1024-36)
 	attr1 := slog.String("foo", "bar")

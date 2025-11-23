@@ -1,4 +1,4 @@
-package uslog
+package uslogs
 
 import (
 	"context"
