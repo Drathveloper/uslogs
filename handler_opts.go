@@ -3,7 +3,14 @@ package uslogs
 import (
 	"io"
 	"log/slog"
+
+	"github.com/Drathveloper/uslogs/internal/logutils"
 )
+
+type MaskPattern struct {
+	Start      string
+	Delimiters []byte
+}
 
 type LogWriterOption = func(w *UnstructuredHandler)
 
@@ -31,9 +38,22 @@ func WithTimestamp() LogWriterOption {
 	}
 }
 
-func WithMaskedFields(fields ...string) LogWriterOption {
+func WithMaskedAttributes(attrs ...string) LogWriterOption {
 	return func(logWriter *UnstructuredHandler) {
-		logWriter.maskedFields = fields
+		logWriter.maskedAttrs = attrs
+	}
+}
+
+func WithMaskedPatterns(patterns ...MaskPattern) LogWriterOption {
+	return func(logWriter *UnstructuredHandler) {
+		dict := make([]string, 0, len(patterns))
+		maskPatterns := make([]logutils.MaskPattern, 0, len(patterns))
+		for _, pattern := range patterns {
+			dict = append(dict, pattern.Start)
+			maskPatterns = append(maskPatterns, logutils.NewMaskPattern(pattern.Start, '*', pattern.Delimiters...))
+		}
+		logWriter.partialMasker = logutils.NewMasker(dict...)
+		logWriter.partialMaskPatterns = maskPatterns
 	}
 }
 

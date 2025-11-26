@@ -127,7 +127,7 @@ func BenchmarkSlogWriter_HandleWithAll_64(b *testing.B) {
 		uslogs.WithLevel(slog.LevelInfo),
 		uslogs.WithWriter(output),
 		uslogs.WithSeparator('|'),
-		uslogs.WithMaskedFields("foo"),
+		uslogs.WithMaskedAttributes("foo"),
 		uslogs.WithTimestamp())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 64*1024-36)
@@ -150,7 +150,7 @@ func BenchmarkSlogWriter_HandleWithAll_32(b *testing.B) {
 		uslogs.WithLevel(slog.LevelInfo),
 		uslogs.WithWriter(output),
 		uslogs.WithSeparator('|'),
-		uslogs.WithMaskedFields("foo"),
+		uslogs.WithMaskedAttributes("foo"),
 		uslogs.WithTimestamp())
 	logger := slog.New(writer)
 	msg := strings.Repeat("X", 32*1024-36)
@@ -173,7 +173,7 @@ func BenchmarkSlogWriter_HandleWithAll_64Responsive(b *testing.B) {
 		uslogs.WithLevel(slog.LevelInfo),
 		uslogs.WithWriter(output),
 		uslogs.WithSeparator('|'),
-		uslogs.WithMaskedFields("foo"),
+		uslogs.WithMaskedAttributes("foo"),
 		uslogs.WithTimestamp(),
 		uslogs.WithResponsivePool())
 	logger := slog.New(writer)
@@ -197,7 +197,7 @@ func BenchmarkSlogWriter_HandleWithAll_32Responsive(b *testing.B) {
 		uslogs.WithLevel(slog.LevelInfo),
 		uslogs.WithWriter(output),
 		uslogs.WithSeparator('|'),
-		uslogs.WithMaskedFields("foo"),
+		uslogs.WithMaskedAttributes("foo"),
 		uslogs.WithTimestamp(),
 		uslogs.WithResponsivePool())
 	logger := slog.New(writer)

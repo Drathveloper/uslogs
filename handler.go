@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"slices"
-	"strconv"
 	"sync"
 
 	"github.com/Drathveloper/uslogs/internal/logutils"
@@ -24,22 +23,24 @@ var levelNames = map[slog.Level][]byte{
 }
 
 type UnstructuredHandler struct {
-	level            slog.Level
-	withTime         bool
-	isResponsivePool bool
-	separator        byte
-	groupSeparator   byte
-	group            []byte
-	attrs            []byte
-	maskedFields     []string
-	writer           io.Writer
+	level               slog.Level
+	withTime            bool
+	isResponsivePool    bool
+	separator           byte
+	groupSeparator      byte
+	group               []byte
+	attrs               []byte
+	maskedAttrs         []string
+	partialMaskPatterns []logutils.MaskPattern
+	partialMasker       *logutils.Masker
+	writer              io.Writer
 }
 
 func NewUnstructuredHandler(opts ...LogWriterOption) *UnstructuredHandler {
 	logWriter := &UnstructuredHandler{
 		separator:      ' ',
 		groupSeparator: '.',
-		maskedFields:   make([]string, 0),
+		maskedAttrs:    make([]string, 0),
 		writer:         os.Stdout,
 		level:          slog.LevelInfo,
 	}
@@ -71,14 +72,18 @@ func (l *UnstructuredHandler) Handle(_ context.Context, record slog.Record) erro
 
 	if l.withTime {
 		b = logutils.AppendTimeRFC3339(b, record.Time.UTC())
-		b = append(b, ' ', l.separator, ' ')
+		b = logutils.AppendSeparator(b, l.separator)
 	}
 	b = append(b, levelNames[record.Level]...)
-	b = append(b, ' ', l.separator, ' ')
+	b = logutils.AppendSeparator(b, l.separator)
 	b = append(b, record.Message...)
 	b = append(b, l.attrs...)
 	b = append(b, attrBytes...)
 	b = append(b, '\n')
+
+	if l.partialMasker != nil && len(l.partialMaskPatterns) > 0 {
+		b = l.partialMasker.Mask(b, l.partialMaskPatterns)
+	}
 
 	if _, err := l.writer.Write(b); err != nil {
 		logutils.SimplePool.Put(attrBuf)
@@ -94,73 +99,50 @@ func (l *UnstructuredHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	if len(attrs) == 0 {
 		return l
 	}
-	copiedLogWriter := copyLogWriter(l)
-	b := make([]byte, 0, len(copiedLogWriter.attrs)+1024)
-	b = append(b, copiedLogWriter.attrs...)
+	clonedLogWriter := l.clone()
+	b := make([]byte, 0, len(clonedLogWriter.attrs)+1024)
+	b = append(b, clonedLogWriter.attrs...)
 	for _, attr := range attrs {
 		b = l.appendAttr(b, attr)
 	}
-	copiedLogWriter.attrs = b
-	return copiedLogWriter
+	clonedLogWriter.attrs = b
+	return clonedLogWriter
 }
 
 func (l *UnstructuredHandler) WithGroup(name string) slog.Handler {
 	if len(name) == 0 {
 		return l
 	}
-	newLogWriter := copyLogWriter(l)
-	if len(newLogWriter.group) == 0 {
-		newLogWriter.group = []byte(name)
-		return newLogWriter
+	clonedLogWriter := l.clone()
+	if len(clonedLogWriter.group) == 0 {
+		clonedLogWriter.group = []byte(name)
+		return clonedLogWriter
 	}
-	newLogWriter.group = append(newLogWriter.group, newLogWriter.groupSeparator)
-	newLogWriter.group = append(newLogWriter.group, name...)
-	return newLogWriter
+	clonedLogWriter.group = append(clonedLogWriter.group, clonedLogWriter.groupSeparator)
+	clonedLogWriter.group = append(clonedLogWriter.group, name...)
+	return clonedLogWriter
 }
 
-func appendValue(b []byte, v slog.Value) []byte {
-	switch v.Kind() {
-	case slog.KindString:
-		return append(b, v.String()...)
-	case slog.KindInt64:
-		return strconv.AppendInt(b, v.Int64(), 10)
-	case slog.KindUint64:
-		return strconv.AppendUint(b, v.Uint64(), 10)
-	case slog.KindFloat64:
-		return strconv.AppendFloat(b, v.Float64(), 'f', -1, 64)
-	case slog.KindBool:
-		return strconv.AppendBool(b, v.Bool())
-	default:
-		return append(b, v.String()...)
+func (l *UnstructuredHandler) clone() *UnstructuredHandler {
+	if l == nil {
+		return nil
 	}
+	clone := *l
+	return &clone
 }
 
 func (l *UnstructuredHandler) appendAttr(b []byte, attr slog.Attr) []byte {
-	b = append(b, ' ', l.separator, ' ')
+	b = logutils.AppendSeparator(b, l.separator)
 	if len(l.group) != 0 {
 		b = append(b, l.group...)
 		b = append(b, l.groupSeparator)
 	}
 	b = append(b, attr.Key...)
 	b = append(b, '=')
-	if slices.Contains(l.maskedFields, attr.Key) {
+	if slices.Contains(l.maskedAttrs, attr.Key) {
 		b = append(b, maskedFieldValue...)
 	} else {
-		b = appendValue(b, attr.Value)
+		b = logutils.AppendValue(b, attr.Value)
 	}
 	return b
-}
-
-func copyLogWriter(logWriter *UnstructuredHandler) *UnstructuredHandler {
-	return &UnstructuredHandler{
-		level:            logWriter.level,
-		withTime:         logWriter.withTime,
-		separator:        logWriter.separator,
-		groupSeparator:   logWriter.groupSeparator,
-		group:            logWriter.group,
-		attrs:            logWriter.attrs,
-		maskedFields:     logWriter.maskedFields,
-		writer:           logWriter.writer,
-		isResponsivePool: logWriter.isResponsivePool,
-	}
 }

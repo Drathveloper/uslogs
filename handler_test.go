@@ -101,7 +101,7 @@ func TestMaskedFields(t *testing.T) {
 
 	handler := uslogs.NewUnstructuredHandler(
 		uslogs.WithWriter(buf),
-		uslogs.WithMaskedFields("secret", "dontshow"))
+		uslogs.WithMaskedAttributes("secret", "dontshow"))
 
 	record := slog.NewRecord(time.Now(), slog.LevelInfo, "msg", 1)
 	record.AddAttrs(slog.String("secret", "dontshow"))
@@ -147,6 +147,25 @@ func TestIsResponsivePool(t *testing.T) {
 
 	out := buf.String()
 	if !strings.Contains(out, "a=val") || !strings.Contains(out, "msg") {
+		t.Errorf("output = %q, want it to contain message and attribute", out)
+	}
+}
+
+func TestWithPatternMasking(t *testing.T) {
+	buf := &bytes.Buffer{}
+	handler := uslogs.NewUnstructuredHandler(
+		uslogs.WithWriter(buf),
+		uslogs.WithMaskedPatterns(uslogs.MaskPattern{Start: "Authorization:[", Delimiters: []byte{']'}}))
+
+	record := slog.NewRecord(time.Now(), slog.LevelInfo, "Authorization:[Bearer asdfqwerty]", 1)
+	record.AddAttrs(slog.String("a", "val"))
+
+	if err := handler.Handle(context.Background(), record); err != nil {
+		t.Fatalf("Handle returned error: %v", err)
+	}
+
+	out := buf.String()
+	if !strings.Contains(out, "Authorization:[*****************]") {
 		t.Errorf("output = %q, want it to contain message and attribute", out)
 	}
 }
