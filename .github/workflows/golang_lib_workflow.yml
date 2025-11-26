@@ -18,7 +18,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Extract Go version
+      - name: Setup Go version
         id: go-version
         run: |
           version=$(grep '^go ' go.mod | awk '{print $2}')
@@ -46,8 +46,12 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Setup Go version
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ needs.setup.outputs.go_version }}
       - run: make lint
