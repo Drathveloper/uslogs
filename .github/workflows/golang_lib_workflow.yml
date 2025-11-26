@@ -71,8 +71,13 @@ jobs:
           go-version: ${{ needs.setup.outputs.go_version }}
       - name: Test Go Code
         run: make test
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: reports/coverage
 
-  build:
+  compile:
     needs: setup
     runs-on: ubuntu-latest
     steps:
