@@ -91,3 +91,12 @@ func (p ResponsivePool) GetPool(size int) *sync.Pool {
 		return p[extraLargePoolID]
 	}
 }
+
+// PutPool returns to the given pool the given byte slice only if it's not too big.
+func PutPool(pool *sync.Pool, bytesPtr *[]byte) {
+	// We avoid returning huge byte arrays to the pool to avoid increasing memory usage.
+	if len(*bytesPtr) > extraLargePoolSize {
+		return
+	}
+	pool.Put(bytesPtr)
+}

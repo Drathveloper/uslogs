@@ -216,3 +216,27 @@ func BenchmarkSlogWriter_HandleWithAll_32Responsive(b *testing.B) {
 		}
 	})
 }
+
+func BenchmarkSlogWriter_HandleWithAll_65Responsive(b *testing.B) {
+	writer := uslogs.NewUnstructuredHandler(
+		uslogs.WithLevel(slog.LevelInfo),
+		uslogs.WithWriter(output),
+		uslogs.WithSeparator('|'),
+		uslogs.WithMaskedAttributes("foo"),
+		uslogs.WithTimestamp(),
+		uslogs.WithResponsivePool())
+	logger := slog.New(writer)
+	msg := strings.Repeat("X", 65*1024-36)
+	attr1 := slog.String("foo", "bar")
+	attr2 := slog.Int("baz", 25)
+	args := []any{attr1, attr2}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			logger.Info(msg, args...)
+		}
+	})
+}
