@@ -9,4 +9,4 @@ on:
 
 jobs:
   call-parent:
-    uses: .parent/workflows/golang_lib_workflow.yml
+    uses: ./.parent/workflows/golang_lib_workflow.yml
