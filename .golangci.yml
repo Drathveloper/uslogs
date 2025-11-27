@@ -1,0 +1,88 @@
+version: "2"
+linters:
+  settings:
+    depguard:
+      rules:
+        main:
+          allow:
+            - bytes
+            - context
+            - crypto
+            - encoding
+            - errors
+            - fmt
+            - log
+            - net
+            - github.com/drathveloper/go-cloud-gateway
+            - github.com/stretchr/testify/assert
+            - github.com/stretchr/testify/require
+            - github.com/go-playground/validator/v10
+            - golang.org/x/net/http2
+            - gopkg.in/yaml.v3
+            - io
+            - math/rand
+            - reflect
+            - regexp
+            - runtime
+            - slices
+            - strconv
+            - strings
+            - sync
+            - testing
+            - time
+            - unsafe
+    govet:
+      enable-all: true
+    tagalign:
+      order:
+        - json
+        - yaml
+        - validate
+  default: all
+  disable:
+    - wsl
+    - tagliatelle
+    - nlreturn
+    - exhaustruct
+  exclusions:
+    generated: lax
+    rules:
+      - path: _test\.go
+        linters:
+          - varnamelen
+          - paralleltest
+          - mirror
+          - lll
+          - funlen
+          - forcetypeassert
+          - gochecknoglobals
+          - err113
+          - dupl
+          - maintidx
+          - cyclop
+      - linters:
+          - gosec
+        text: 'G104:'
+      - linters:
+          - revive
+        text: 'package-comments:'
+    paths:
+      - ^examples/
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - k8s.io/kube-state-metrics
+        - k8s.io/kube-state-metrics/v2
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
