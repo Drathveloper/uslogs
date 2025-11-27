@@ -1,6 +1,7 @@
 package uslogs_test
 
 import (
+	"context"
 	"io"
 	"log/slog"
 	"strings"
@@ -24,7 +25,7 @@ func BenchmarkLogWriter_Handle(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = writer.Handle(nil, record)
+			_ = writer.Handle(context.Background(), record)
 		}
 	})
 }
@@ -41,7 +42,7 @@ func BenchmarkLogWriter_HandleWithTime(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = writer.Handle(nil, record)
+			_ = writer.Handle(context.Background(), record)
 		}
 	})
 }
@@ -60,7 +61,7 @@ func BenchmarkLogWriter_HandleWithTimeAndAttrs(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = writer.Handle(nil, record)
+			_ = writer.Handle(context.Background(), record)
 		}
 	})
 }

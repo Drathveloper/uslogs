@@ -13,7 +13,7 @@ func BenchmarkAppendTimeRFC3339Optimized(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		buf = buf[:0]
 		buf = logutils.AppendTimeRFC3339(buf, tm)
 	}
@@ -24,7 +24,7 @@ func BenchmarkTimeFormatRFC3339(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = tm.Format(time.RFC3339)
 	}
 }

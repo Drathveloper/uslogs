@@ -6,7 +6,7 @@ const (
 	// The magic number 36 is the result of adding:
 	// date size in RFC3339 that it's 25 bytes
 	// 2 x separator and two spaces around them, that it's 6 bytes
-	// level in string format that can be 4 or 5 bytes, so we choose 5 to avoid the calc
+	// level in string format that can be 4 or 5 bytes, so we choose 5 to avoid the calc.
 	magicNumber = 36
 
 	extraSmallPoolSize = 1*1024 + magicNumber
@@ -16,6 +16,7 @@ const (
 	extraLargePoolSize = 64*1024 + magicNumber
 )
 
+// PoolID represents the size of the pool.
 type PoolID int
 
 const (
@@ -26,8 +27,12 @@ const (
 	extraLargePoolID
 )
 
+// ResponsivePool is a map of pools that are responsive to the size of the data.
 type ResponsivePool map[PoolID]*sync.Pool
 
+// BytesPools is the pool of byte slices.
+//
+//nolint:gochecknoglobals
 var BytesPools = ResponsivePool{
 	extraSmallPoolID: {
 		New: func() any {
@@ -61,6 +66,9 @@ var BytesPools = ResponsivePool{
 	},
 }
 
+// SimplePool is a pool of fixed length byte slice matching 64KB.
+//
+//nolint:gochecknoglobals
 var SimplePool = &sync.Pool{
 	New: func() any {
 		b := make([]byte, 0, extraLargePoolSize)
@@ -68,6 +76,7 @@ var SimplePool = &sync.Pool{
 	},
 }
 
+// GetPool returns the pool that matches the size of the data.
 func (p ResponsivePool) GetPool(size int) *sync.Pool {
 	switch {
 	case size <= extraSmallPoolSize:
