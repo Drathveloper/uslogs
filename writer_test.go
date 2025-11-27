@@ -45,12 +45,12 @@ func TestAsyncWriter_ConcurrentWrites(t *testing.T) {
 	var wg sync.WaitGroup
 	total := 1000
 
-	for i := 0; i < total; i++ {
+	for i := range total {
 		wg.Add(1)
 
 		go func(i int) {
 			defer wg.Done()
-			msg := []byte(fmt.Sprintf("msg-%d\n", i))
+			msg := fmt.Appendf(nil, "msg-%d\n", i)
 
 			_, err := w.Write(msg)
 			if err != nil {
@@ -105,15 +105,15 @@ func TestAsyncWriter_WriteAfterClose(t *testing.T) {
 }
 
 type slowWriter struct {
-	mu  sync.Mutex
 	buf bytes.Buffer
+	mu  sync.Mutex
 }
 
 func (s *slowWriter) Write(p []byte) (int, error) {
 	time.Sleep(5 * time.Millisecond)
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.buf.Write(p)
+	return s.buf.Write(p) //nolint:wrapcheck
 }
 
 func (s *slowWriter) String() string {
@@ -123,12 +123,13 @@ func (s *slowWriter) String() string {
 }
 
 func TestAsyncWriter_CloseWaitsForDrain(t *testing.T) {
+	//nolint:exhaustruct
 	sw := &slowWriter{}
 	w := uslogs.NewAsyncWriter(sw, 1)
 
 	total := 200
 
-	for i := 0; i < total; i++ {
+	for range total {
 		_, _ = w.Write([]byte("x\n"))
 	}
 
@@ -143,8 +144,8 @@ func TestAsyncWriter_HTTPServerShutdown(t *testing.T) {
 	var buf bytes.Buffer
 	w := uslogs.NewAsyncWriter(&buf, 1000)
 
-	handler := func(wr http.ResponseWriter, r *http.Request) {
-		for i := 0; i < 10; i++ {
+	handler := func(wr http.ResponseWriter, _ *http.Request) {
+		for range 10 {
 			_, err := w.Write([]byte("log line\n"))
 			if err != nil {
 				t.Errorf("write failed: %v", err)
@@ -154,21 +155,26 @@ func TestAsyncWriter_HTTPServerShutdown(t *testing.T) {
 		wr.WriteHeader(http.StatusOK)
 	}
 
+	//nolint:gosec,exhaustruct
 	srv := &http.Server{
 		Addr:    "127.0.0.1:0",
 		Handler: http.HandlerFunc(handler),
 	}
 
+	//nolint:noctx
 	ln, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	//nolint:errcheck
 	go srv.Serve(ln)
 
+	//nolint:exhaustruct
 	client := &http.Client{}
 
-	for i := 0; i < 20; i++ {
+	for range 20 {
+		//nolint:errcheck,noctx
 		go client.Get("http://" + ln.Addr().String())
 	}
 
@@ -199,7 +205,7 @@ func TestAsyncWriter_WithCanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			select {
 			case <-ctx.Done():
 				return

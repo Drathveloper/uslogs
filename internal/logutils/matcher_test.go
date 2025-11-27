@@ -10,8 +10,8 @@ func TestMasker_Mask(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		patterns []logutils.MaskPattern
 		want     string
+		patterns []logutils.MaskPattern
 	}{
 		{
 			name:     "0 defined patterns shouldn't mask",

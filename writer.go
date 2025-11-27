@@ -12,8 +12,8 @@ import (
 
 const allocatedLogSize = 64 * 1024
 
+// AsyncWriter is a writer that asynchronously writes logs to an underlying writer.
 type AsyncWriter struct {
-	size     int
 	logChan  chan *[]byte
 	freeChan chan *[]byte
 	writer   io.Writer
@@ -21,6 +21,7 @@ type AsyncWriter struct {
 	wg       sync.WaitGroup
 }
 
+// NewAsyncWriter creates a new AsyncWriter instance.
 func NewAsyncWriter(writer io.Writer, bufSize int) *AsyncWriter {
 	asyncWriter := &AsyncWriter{
 		logChan:  make(chan *[]byte, bufSize),
@@ -29,21 +30,21 @@ func NewAsyncWriter(writer io.Writer, bufSize int) *AsyncWriter {
 		wg:       sync.WaitGroup{},
 		closed:   atomic.Bool{},
 	}
-	for i := 0; i < bufSize; i++ {
+	for range bufSize {
 		b := make([]byte, 0, allocatedLogSize)
 		asyncWriter.freeChan <- &b
 	}
 	asyncWriter.wg.Add(1)
 	go func() {
 		for buf := range asyncWriter.logChan {
-			n, err := writer.Write(*buf)
+			numBytes, err := writer.Write(*buf)
 			if err != nil {
 				_, _ = fmt.Fprintf(os.Stderr, "asyncWriter error: %v\n", err)
 			}
 			select {
 			case asyncWriter.freeChan <- buf:
 			default:
-				logutils.BytesPools.GetPool(n).Put(buf)
+				logutils.BytesPools.GetPool(numBytes).Put(buf)
 			}
 		}
 		asyncWriter.wg.Done()
@@ -51,6 +52,7 @@ func NewAsyncWriter(writer io.Writer, bufSize int) *AsyncWriter {
 	return asyncWriter
 }
 
+// Write writes the given input to the underlying writer.
 func (w *AsyncWriter) Write(input []byte) (int, error) {
 	if w.closed.Load() {
 		return 0, io.ErrClosedPipe
@@ -59,13 +61,14 @@ func (w *AsyncWriter) Write(input []byte) (int, error) {
 	select {
 	case buf = <-w.freeChan:
 	default:
-		buf = logutils.BytesPools.GetPool(len(input)).Get().(*[]byte)
+		buf = logutils.BytesPools.GetPool(len(input)).Get().(*[]byte) //nolint:forcetypeassert
 	}
 	*buf = append((*buf)[:0], input...)
 	w.logChan <- buf
 	return len(input), nil
 }
 
+// Close closes the underlying writer.
 func (w *AsyncWriter) Close() error {
 	if w.closed.Swap(true) {
 		return nil
@@ -75,7 +78,7 @@ func (w *AsyncWriter) Close() error {
 
 	w.wg.Wait()
 	if c, ok := w.writer.(io.Closer); ok {
-		return c.Close()
+		return c.Close() //nolint: wrapcheck
 	}
 
 	return nil
