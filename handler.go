@@ -92,12 +92,12 @@ func (l *UnstructuredHandler) Handle(_ context.Context, record slog.Record) erro
 	}
 
 	if _, err := l.writer.Write(bytes); err != nil {
-		logutils.SimplePool.Put(attrBuf)
-		pool.Put(buf)
+		logutils.PutPool(logutils.SimplePool, attrBuf)
+		logutils.PutPool(pool, buf)
 		return err //nolint:wrapcheck
 	}
-	logutils.SimplePool.Put(attrBuf)
-	pool.Put(buf)
+	logutils.PutPool(logutils.SimplePool, attrBuf)
+	logutils.PutPool(pool, buf)
 	return nil
 }
 
