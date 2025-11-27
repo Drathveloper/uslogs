@@ -8,5 +8,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  call-parent:
+  run-library-ci:
+    name: Run Library CI
     uses: Drathveloper/go-build-tools/.github/workflows/golang_lib_workflow.yml@master
