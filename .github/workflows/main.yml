@@ -1,0 +1,12 @@
+name: Library CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  call-parent:
+    uses: .parent/workflows/golang_lib_workflow.yml
