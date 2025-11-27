@@ -9,4 +9,4 @@ on:
 
 jobs:
   call-parent:
-    uses: Drathveloper/go-build-tools/.github/workflows/golang_lib_workflow.yml@main
+    uses: Drathveloper/go-build-tools/.github/workflows/golang_lib_workflow.yml@master
