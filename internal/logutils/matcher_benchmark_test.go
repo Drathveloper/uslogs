@@ -35,7 +35,7 @@ func BenchmarkMask_1KB(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Mask(buf, testPatterns)
 	}
 }
@@ -58,7 +58,7 @@ func BenchmarkMaskRegex_1KB(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, re := range regexes {
 			_ = re.ReplaceAllFunc(buf, func(m []byte) []byte {
 				for x := range m {
@@ -76,7 +76,7 @@ func BenchmarkMask_8KB(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		buf := make([]byte, len(in))
 		copy(buf, in)
 		_ = m.Mask(buf, testPatterns)
@@ -91,7 +91,7 @@ func BenchmarkMask_4_64KB(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Mask(buf, testPatterns)
 	}
 }
@@ -114,21 +114,18 @@ func BenchmarkMaskRegex_4_64KB(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, re := range regexes {
 			_ = re.ReplaceAllFunc(buf, func(m []byte) []byte {
 				idx := re.FindSubmatchIndex(m)
-				if idx == nil || len(idx) < 4 {
+				if len(idx) < 4 {
 					return m
 				}
-
 				startValue := idx[2]
 				endValue := idx[3]
-
 				for i := startValue; i < endValue; i++ {
 					m[i] = '*'
 				}
-
 				return m
 			})
 		}
@@ -143,7 +140,7 @@ func BenchmarkMask_16_64KB(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Mask(buf, testPatterns)
 	}
 }
@@ -167,21 +164,18 @@ func BenchmarkMaskRegex_16_64KB(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, re := range regexes {
 			_ = re.ReplaceAllFunc(buf, func(m []byte) []byte {
 				idx := re.FindSubmatchIndex(m)
-				if idx == nil || len(idx) < 4 {
+				if len(idx) < 4 {
 					return m
 				}
-
 				startValue := idx[2]
 				endValue := idx[3]
-
 				for i := startValue; i < endValue; i++ {
 					m[i] = '*'
 				}
-
 				return m
 			})
 		}

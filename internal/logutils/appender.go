@@ -5,26 +5,36 @@ import (
 	"strconv"
 )
 
-func AppendValue(b []byte, v slog.Value) []byte {
-	switch v.Kind() {
+const (
+	numBase = 10
+
+	floatPrecision = -1
+	floatSize      = 64
+)
+
+// AppendValue appends a slog value to a byte slice.
+func AppendValue(bytes []byte, value slog.Value) []byte {
+	//nolint:exhaustive
+	switch value.Kind() {
 	case slog.KindString:
-		return append(b, v.String()...)
+		return append(bytes, value.String()...)
 	case slog.KindInt64:
-		return strconv.AppendInt(b, v.Int64(), 10)
+		return strconv.AppendInt(bytes, value.Int64(), numBase)
 	case slog.KindUint64:
-		return strconv.AppendUint(b, v.Uint64(), 10)
+		return strconv.AppendUint(bytes, value.Uint64(), numBase)
 	case slog.KindFloat64:
-		return strconv.AppendFloat(b, v.Float64(), 'f', -1, 64)
+		return strconv.AppendFloat(bytes, value.Float64(), 'f', floatPrecision, floatSize)
 	case slog.KindBool:
-		return strconv.AppendBool(b, v.Bool())
+		return strconv.AppendBool(bytes, value.Bool())
 	default:
-		return append(b, v.String()...)
+		return append(bytes, value.String()...)
 	}
 }
 
-func AppendSeparator(b []byte, sep byte) []byte {
+// AppendSeparator appends a separator to a byte slice.
+func AppendSeparator(bytes []byte, sep byte) []byte {
 	if sep == ' ' {
-		return append(b, sep)
+		return append(bytes, sep)
 	}
-	return append(b, ' ', sep, ' ')
+	return append(bytes, ' ', sep, ' ')
 }

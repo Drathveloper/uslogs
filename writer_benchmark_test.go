@@ -15,7 +15,7 @@ func BenchmarkAsyncWriter(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, _ = w.Write(data)
 	}
 

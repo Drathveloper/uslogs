@@ -15,6 +15,7 @@ const (
 	maskedFieldValue = "<MASKED>"
 )
 
+//nolint:gochecknoglobals
 var levelNames = map[slog.Level][]byte{
 	slog.LevelDebug: []byte("DEBUG"),
 	slog.LevelInfo:  []byte("INFO"),
@@ -22,21 +23,24 @@ var levelNames = map[slog.Level][]byte{
 	slog.LevelError: []byte("ERROR"),
 }
 
+// UnstructuredHandler writes log lines in plain text format.
 type UnstructuredHandler struct {
+	writer              io.Writer
+	partialMasker       *logutils.Masker
+	group               []byte
+	attrs               []byte
+	maskedAttrs         []string
+	partialMaskPatterns []logutils.MaskPattern
 	level               slog.Level
 	withTime            bool
 	isResponsivePool    bool
 	separator           byte
 	groupSeparator      byte
-	group               []byte
-	attrs               []byte
-	maskedAttrs         []string
-	partialMaskPatterns []logutils.MaskPattern
-	partialMasker       *logutils.Masker
-	writer              io.Writer
 }
 
+// NewUnstructuredHandler creates a new UnstructuredHandler instance.
 func NewUnstructuredHandler(opts ...LogWriterOption) *UnstructuredHandler {
+	//nolint:exhaustruct
 	logWriter := &UnstructuredHandler{
 		separator:      ' ',
 		groupSeparator: '.',
@@ -50,12 +54,14 @@ func NewUnstructuredHandler(opts ...LogWriterOption) *UnstructuredHandler {
 	return logWriter
 }
 
+// Enabled returns true if the log level is greater than or equal to the configured level.
 func (l *UnstructuredHandler) Enabled(_ context.Context, level slog.Level) bool {
 	return l.level <= level
 }
 
+// Handle writes the log line to the writer.
 func (l *UnstructuredHandler) Handle(_ context.Context, record slog.Record) error {
-	attrBuf := logutils.SimplePool.Get().(*[]byte)
+	attrBuf := logutils.SimplePool.Get().(*[]byte) //nolint:forcetypeassert
 	attrBytes := (*attrBuf)[:0]
 	record.Attrs(func(attr slog.Attr) bool {
 		attrBytes = l.appendAttr(attrBytes, attr)
@@ -67,40 +73,41 @@ func (l *UnstructuredHandler) Handle(_ context.Context, record slog.Record) erro
 	} else {
 		pool = logutils.SimplePool
 	}
-	buf := pool.Get().(*[]byte)
-	b := (*buf)[:0]
+	buf := pool.Get().(*[]byte) //nolint:forcetypeassert
+	bytes := (*buf)[:0]
 
 	if l.withTime {
-		b = logutils.AppendTimeRFC3339(b, record.Time.UTC())
-		b = logutils.AppendSeparator(b, l.separator)
+		bytes = logutils.AppendTimeRFC3339(bytes, record.Time.UTC())
+		bytes = logutils.AppendSeparator(bytes, l.separator)
 	}
-	b = append(b, levelNames[record.Level]...)
-	b = logutils.AppendSeparator(b, l.separator)
-	b = append(b, record.Message...)
-	b = append(b, l.attrs...)
-	b = append(b, attrBytes...)
-	b = append(b, '\n')
+	bytes = append(bytes, levelNames[record.Level]...)
+	bytes = logutils.AppendSeparator(bytes, l.separator)
+	bytes = append(bytes, record.Message...)
+	bytes = append(bytes, l.attrs...)
+	bytes = append(bytes, attrBytes...)
+	bytes = append(bytes, '\n')
 
 	if l.partialMasker != nil && len(l.partialMaskPatterns) > 0 {
-		b = l.partialMasker.Mask(b, l.partialMaskPatterns)
+		bytes = l.partialMasker.Mask(bytes, l.partialMaskPatterns)
 	}
 
-	if _, err := l.writer.Write(b); err != nil {
+	if _, err := l.writer.Write(bytes); err != nil {
 		logutils.SimplePool.Put(attrBuf)
 		pool.Put(buf)
-		return err
+		return err //nolint:wrapcheck
 	}
 	logutils.SimplePool.Put(attrBuf)
 	pool.Put(buf)
 	return nil
 }
 
+// WithAttrs adds attributes to the log line.
 func (l *UnstructuredHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	if len(attrs) == 0 {
 		return l
 	}
 	clonedLogWriter := l.clone()
-	b := make([]byte, 0, len(clonedLogWriter.attrs)+1024)
+	b := make([]byte, 0, len(clonedLogWriter.attrs)+1024) //nolint:mnd
 	b = append(b, clonedLogWriter.attrs...)
 	for _, attr := range attrs {
 		b = l.appendAttr(b, attr)
@@ -109,6 +116,7 @@ func (l *UnstructuredHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return clonedLogWriter
 }
 
+// WithGroup adds a group name to the log line.
 func (l *UnstructuredHandler) WithGroup(name string) slog.Handler {
 	if len(name) == 0 {
 		return l
@@ -131,18 +139,18 @@ func (l *UnstructuredHandler) clone() *UnstructuredHandler {
 	return &clone
 }
 
-func (l *UnstructuredHandler) appendAttr(b []byte, attr slog.Attr) []byte {
-	b = logutils.AppendSeparator(b, l.separator)
+func (l *UnstructuredHandler) appendAttr(input []byte, attr slog.Attr) []byte {
+	input = logutils.AppendSeparator(input, l.separator)
 	if len(l.group) != 0 {
-		b = append(b, l.group...)
-		b = append(b, l.groupSeparator)
+		input = append(input, l.group...)
+		input = append(input, l.groupSeparator)
 	}
-	b = append(b, attr.Key...)
-	b = append(b, '=')
+	input = append(input, attr.Key...)
+	input = append(input, '=')
 	if slices.Contains(l.maskedAttrs, attr.Key) {
-		b = append(b, maskedFieldValue...)
+		input = append(input, maskedFieldValue...)
 	} else {
-		b = logutils.AppendValue(b, attr.Value)
+		input = logutils.AppendValue(input, attr.Value)
 	}
-	return b
+	return input
 }
